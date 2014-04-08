@@ -1,0 +1,284 @@
+/* Copyright 2014 Dominic Scheurer
+ *
+ * This file is part of FirstOrderParser.
+ * 
+ * FirstOrderParser is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * FirstOrderParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with FirstOrderParser.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+options
+{
+	LOOKAHEAD = 1;
+	JDK_VERSION = "1.6";
+	static = false;
+}
+
+PARSER_BEGIN(FOLParser)
+package de.dominicscheurer.fol.parser;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+
+import de.dominicscheurer.fol.model.*;
+
+/**
+ * <p>
+ * Parser for formulas of the language of first-order (predicate)
+ * logic. The suggested method to start with is {@link #parse(String)}.
+ * </p>
+ * 
+ * <p>
+ * Syntax: Variables start with upper letters, functions and predicates
+ * with lower letters. Digits and underscores in identifiers are allowed.
+ * The binary operators "&", "|", "->" must be put in parentheses; parentheses
+ * in other places are not allowed. The negation operator is "!", the
+ * universal quantifier is "forall", the existential quantifier is "exists".
+ * Whitespace is ignored.
+ * </p>
+ * 
+ * <p>
+ * <pre>
+ * term  ::= var | fun | fun terms
+ * terms ::= "(" term ")" | "(" term "," terms ")"
+ * form  ::=   pred
+ *           | pred terms
+ *           | "!" form
+ *           | "(" form "&" form ")"
+ *           | "(" form "|" form ")"
+ *           | "(" form "->" form ")"
+ *           | "exists " var "." form
+ *           | "forall " var "." form
+ *            
+ * </pre>
+ * </p>
+ * 
+ * @author Dominic Scheurer
+ */
+public class FOLParser
+{
+    /**
+     * Parses a given formula.
+     * 
+     * @param formula Formula to parse.
+     * @return Parsed formula object.
+     * @throws ParseException if an error occurs during parsing.
+     */
+    public static Formula parse(String formula) throws ParseException
+    {
+        FOLParser parser =
+        		new FOLParser(new StringReader(formula));
+        return parser.parse();
+    }
+}
+PARSER_END(FOLParser)
+
+SKIP : 
+{
+ 	" "
+|	"\t"
+|	"\r"
+|	"\n"
+|	"\f"
+}
+
+TOKEN :
+{
+	< OPEN: "(" >
+|	< CLOSE: ")" >
+|	< COMMA: "," >
+|	< DOT: "." >
+
+|	< NEG: "!" >
+|	< CONJ: "&" >
+|	< DISJ: "|" >
+|	< IMP: "->" >
+|	< ALL: "forall" >
+|	< EXIST: "exists" >
+
+|   < VARIABLE: < UPPER > (< INNER >)* >
+|   < ID: < LOWER > (< INNER >)* >
+
+|   < #INNER: (<UPPER> | <UNDER> | <LOWER> | <DIGIT>) >    
+|   < #DIGIT: ["0" - "9"] >
+|   < #LOWER: ["a" - "z"] >
+|   < #UPPER: ["A" - "Z"] >
+|   < #UNDER: "_"  >
+}
+
+Formula parse() :
+{
+    Formula form;}
+{    form = formula()
+    < EOF >
+    {        return form;
+    }
+}
+
+Formula formula() :
+{
+    Formula form;
+}
+{
+	(
+	    form = atomic()      |
+	    form = negated()     |	    form = existential() |
+	    form = universal()   |
+	    form = binary()
+	)
+	{		return form;
+	}
+}
+
+Existential existential() :
+{
+    Formula inner;
+    Variable qfdVar;
+}
+{
+	< EXIST >
+	< VARIABLE >
+	{
+	    qfdVar = new Variable(token.image);
+	}
+	< DOT >
+	inner = formula()
+	{
+	    return new Existential(inner, qfdVar);
+	}
+}
+
+Universal universal() :
+{
+    Formula inner;
+    Variable qfdVar;
+}
+{
+	< ALL >
+	< VARIABLE >
+	{
+	    qfdVar = new Variable(token.image);
+	}
+	< DOT >
+	inner = formula()
+	{
+	    return new Universal(inner, qfdVar);
+	}
+}
+
+Negated negated() :
+{
+    Formula inner;
+}
+{
+	< NEG >
+	inner = formula()
+	{
+	    return new Negated(inner);
+	}
+}
+
+Formula binary() :
+{
+    Formula innerA, innerB;
+}
+{
+    < OPEN >
+	innerA = formula()
+	(	    < IMP >
+		innerB = formula()
+		< CLOSE >
+		{
+		    return new Implicative(innerA, innerB);
+		}
+    |   
+	    < DISJ >
+		innerB = formula()
+		< CLOSE >
+		{
+		    return new Disjunctive(innerA, innerB);
+		}
+	|   
+	    < CONJ >
+		innerB = formula()
+		< CLOSE >
+		{
+		    return new Conjunctive(innerA, innerB);
+		}
+	)
+}
+
+Atomic atomic() :
+{
+    Predicate p;
+    ArrayList<Term> arguments;
+}
+{
+	< ID >
+	{
+	    p = new Predicate(token.image);
+	}
+	(
+		arguments = tuple()
+		{
+		    return new Atomic(p, arguments);
+		}
+    |
+		{
+		    return new Atomic(p);
+		}	)
+}
+
+Term term() :
+{
+    String function;
+    ArrayList<Term> arguments = new ArrayList<Term>();
+}
+{
+    < VARIABLE >
+    {
+        return new Variable(token.image);
+    }
+  | < ID >
+    {
+    	function = token.image;
+    }
+    (
+		arguments = tuple()
+    )?
+    {
+    	return new Term(function, arguments);
+	}	
+}
+
+ArrayList<Term> tuple() :
+{
+    ArrayList<Term> tuple = new ArrayList<Term>();
+    Term t;
+}
+{
+    < OPEN >
+    t = term()
+    {
+        tuple.add(t);
+    }
+    (
+        < COMMA > t = term()
+        {
+            tuple.add(t);
+        }
+    )*
+    < CLOSE >
+    {
+		return tuple;
+    }
+}
