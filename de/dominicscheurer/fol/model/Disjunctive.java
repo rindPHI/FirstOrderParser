@@ -45,14 +45,14 @@ public class Disjunctive implements Formula {
     }
 
     @Override
-    public void substitute(Term term, Variable forVar) {
+    public void substitute(Term term, Term forVar) {
         subformulaA.substitute(term, forVar);
         subformulaB.substitute(term, forVar);
     }
 
     @Override
-    public Set<Variable> freeVars() {
-        Set<Variable> freeVars = subformulaA.freeVars();
+    public Set<Term> freeVars() {
+        Set<Term> freeVars = subformulaA.freeVars();
         freeVars.addAll(subformulaB.freeVars());
         
         return freeVars;

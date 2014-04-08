@@ -22,9 +22,9 @@ import java.util.Set;
 
 public class Universal implements Formula {
     private Formula subformula = null;
-    private Variable quantifiedVar = null;
+    private Term quantifiedVar = null;
 
-    public Universal(Formula subformula, Variable quantifiedVar) {
+    public Universal(Formula subformula, Term quantifiedVar) {
         this.subformula = subformula;
         this.quantifiedVar = quantifiedVar;
     }
@@ -37,24 +37,24 @@ public class Universal implements Formula {
         this.subformula = subformula;
     }
 
-    public Variable getQuantifiedVar() {
+    public Term getQuantifiedVar() {
         return quantifiedVar;
     }
 
-    public void setQuantifiedVar(Variable quantifiedVar) {
+    public void setQuantifiedVar(Term quantifiedVar) {
         this.quantifiedVar = quantifiedVar;
     }
 
     @Override
-    public void substitute(Term term, Variable forVar) {
+    public void substitute(Term term, Term forVar) {
         if (!forVar.equals(quantifiedVar)) {
             subformula.substitute(term, forVar);
         }
     }
 
     @Override
-    public Set<Variable> freeVars() {
-        Set<Variable> freeVars = subformula.freeVars();
+    public Set<Term> freeVars() {
+        Set<Term> freeVars = subformula.freeVars();
         freeVars.remove(quantifiedVar);
         return freeVars;
     }

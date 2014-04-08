@@ -142,13 +142,13 @@ Formula formula() :
 Existential existential() :
 {
     Formula inner;
-    Variable qfdVar;
+    Term qfdVar;
 }
 {
 	< EXIST >
 	< VARIABLE >
 	{
-	    qfdVar = new Variable(token.image);
+	    qfdVar = new Term(token.image);
 	}
 	< DOT >
 	inner = formula()
@@ -160,13 +160,13 @@ Existential existential() :
 Universal universal() :
 {
     Formula inner;
-    Variable qfdVar;
+    Term qfdVar;
 }
 {
 	< ALL >
 	< VARIABLE >
 	{
-	    qfdVar = new Variable(token.image);
+	    qfdVar = new Term(token.image);
 	}
 	< DOT >
 	inner = formula()
@@ -246,7 +246,7 @@ Term term() :
 {
     < VARIABLE >
     {
-        return new Variable(token.image);
+        return new Term(token.image);
     }
   | < ID >
     {

@@ -18,27 +18,9 @@
 
 package de.dominicscheurer.fol.model;
 
-import java.util.Set;
-
 /**
- * Basic interface for formulas, comprising methods for
- * substitution and computation of free variables.
+ * Basic interface for formulas.
  * 
  * @author Dominic Scheurer
  */
-public interface Formula {
-    /**
-     * Substitutes the given term for the given variable
-     * in the formula. Only free occurrences of the variable
-     * are considered.
-     * 
-     * @param term Term to substitute forVar with.
-     * @param forVar Variable to substitute with term.
-     */
-    public void substitute(Term term, Variable forVar);
-    
-    /**
-     * @return The free variables of the formula.
-     */
-    public Set<Variable> freeVars();
-}
+public interface Formula extends VariableContainer {}

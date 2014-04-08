@@ -45,14 +45,14 @@ public class Implicative implements Formula {
     }
 
     @Override
-    public void substitute(Term term, Variable forVar) {
+    public void substitute(Term term, Term forVar) {
         premise.substitute(term, forVar);
         conclusion.substitute(term, forVar);
     }
 
     @Override
-    public Set<Variable> freeVars() {
-        Set<Variable> freeVars = premise.freeVars();
+    public Set<Term> freeVars() {
+        Set<Term> freeVars = premise.freeVars();
         freeVars.addAll(conclusion.freeVars());
         
         return freeVars;

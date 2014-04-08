@@ -61,20 +61,18 @@ public class Atomic implements Formula {
     }
 
     @Override
-    public void substitute(Term term, Variable forVar) {
+    public void substitute(Term term, Term forVar) {
         for (int i = 0; i < terms.size(); i++) {
-            if (terms.get(i).equals(forVar)) {
-                terms.set(i, term);
-            }
+            terms.get(i).substitute(term, forVar);
         }
     }
 
     @Override
-    public Set<Variable> freeVars() {
-        HashSet<Variable> freeVars = new HashSet<Variable>();
+    public Set<Term> freeVars() {
+        HashSet<Term> freeVars = new HashSet<Term>();
         for (Term term : terms) {
-            if (term instanceof Variable) {
-                freeVars.add((Variable) term);
+            if (term.isVariable()) {
+                freeVars.add(term);
             }
         }
         return freeVars;

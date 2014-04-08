@@ -36,12 +36,12 @@ public class Negated implements Formula {
     }
 
     @Override
-    public void substitute(Term term, Variable forVar) {
+    public void substitute(Term term, Term forVar) {
         subformula.substitute(term, forVar);
     }
 
     @Override
-    public Set<Variable> freeVars() {
+    public Set<Term> freeVars() {
         return subformula.freeVars();
     }
     

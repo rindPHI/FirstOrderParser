@@ -19,8 +19,10 @@
 package de.dominicscheurer.fol.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Term {
+public class Term implements VariableContainer {
     private String function = "";
     private ArrayList<Term> innerTerms = null;
     
@@ -55,7 +57,13 @@ public class Term {
     }
     
     public boolean isConstant() {
-        return arity() == 0;
+        return arity() == 0 &&
+                Character.isLowerCase(function.charAt(0));
+    }
+    
+    public boolean isVariable() {
+        return arity() == 0 &&
+                Character.isUpperCase(function.charAt(0));
     }
     
     @Override
@@ -63,7 +71,7 @@ public class Term {
         StringBuilder result = new StringBuilder();
         result.append(function.toString());
         
-        if (!isConstant()) {
+        if (!isConstant() && !isVariable()) {
             result.append("(");
             
             int i;
@@ -77,5 +85,53 @@ public class Term {
         }
         
         return result.toString();
+    }
+
+    @Override
+    public void substitute(Term term, Term forVar) {
+        if (isVariable() &&
+                this.equals(forVar)) {
+            setFunction(term.getFunction());
+            setInnerTerms(term.getInnerTerms());
+        }
+        
+        for (int i = 0; i < innerTerms.size(); i++) {
+            Term innerTerm = innerTerms.get(i);
+            
+            if (!innerTerm.isVariable()) {
+                innerTerm.substitute(term, forVar);
+            } else if (innerTerm.equals(forVar)) {
+                innerTerms.set(i, term);
+            }
+        }
+    }
+
+    @Override
+    public Set<Term> freeVars() {
+        HashSet<Term> freeVars = new HashSet<Term>();
+        
+        for (Term innerTerm : innerTerms) {
+            if (innerTerm.isVariable()) {
+                freeVars.add(innerTerm);
+            } else {
+                freeVars.addAll(innerTerm.freeVars());
+            }
+        }
+        
+        return freeVars;
+    }
+    
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Term)) {
+            return false;
+        } else {
+            return toString().equals(((Term) obj).toString());
+        }
     }
 }

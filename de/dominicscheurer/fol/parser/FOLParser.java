@@ -91,10 +91,10 @@ public class FOLParser implements FOLParserConstants {
 
   final public Existential existential() throws ParseException {
     Formula inner;
-    Variable qfdVar;
+    Term qfdVar;
     jj_consume_token(EXIST);
     jj_consume_token(VARIABLE);
-            qfdVar = new Variable(token.image);
+            qfdVar = new Term(token.image);
     jj_consume_token(DOT);
     inner = formula();
             {if (true) return new Existential(inner, qfdVar);}
@@ -103,10 +103,10 @@ public class FOLParser implements FOLParserConstants {
 
   final public Universal universal() throws ParseException {
     Formula inner;
-    Variable qfdVar;
+    Term qfdVar;
     jj_consume_token(ALL);
     jj_consume_token(VARIABLE);
-            qfdVar = new Variable(token.image);
+            qfdVar = new Term(token.image);
     jj_consume_token(DOT);
     inner = formula();
             {if (true) return new Universal(inner, qfdVar);}
@@ -175,7 +175,7 @@ public class FOLParser implements FOLParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VARIABLE:
       jj_consume_token(VARIABLE);
-        {if (true) return new Variable(token.image);}
+        {if (true) return new Term(token.image);}
       break;
     case ID:
       jj_consume_token(ID);

@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import de.dominicscheurer.fol.model.Formula;
 import de.dominicscheurer.fol.model.Term;
-import de.dominicscheurer.fol.model.Variable;
 import de.dominicscheurer.fol.parser.FOLParser;
 import de.dominicscheurer.fol.parser.ParseException;
 
@@ -98,16 +97,16 @@ public class FOLParserTest {
         Formula formula = 
                 FOLParser.parse("forall X. (p(X,Y) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))");
         
-        HashSet<Variable> expected = new HashSet<Variable>();
-        expected.add(new Variable("Y"));
+        HashSet<Term> expected = new HashSet<Term>();
+        expected.add(new Term("Y"));
         
-        Set<Variable> actual = formula.freeVars();
+        Set<Term> actual = formula.freeVars();
         
         assertEquals("Different number of free variables",
                 expected.size(),
                 actual.size());
         
-        for (Variable var : expected){
+        for (Term var : expected){
             assertTrue("Expected variable not contained in actual free vars set",
                     actual.contains(var));
         }
@@ -116,10 +115,13 @@ public class FOLParserTest {
     @Test
     public void testComplexSubstitute() throws ParseException {
         Formula formula = 
-                FOLParser.parse("forall X. (p(X,Y) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))");
-        
-        formula.substitute(new Term("d"), new Variable("Y"));
-        
+                FOLParser.parse("forall X. (p(X,Y) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))");        
+        formula.substitute(new Term("d"), new Term("Y"));        
         assertEquals("forall X. (p(X,d) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))", formula.toString());
+        
+        formula = 
+                FOLParser.parse("forall X. (p(X,f(g(Y))) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))");        
+        formula.substitute(new Term("d"), new Term("Y"));        
+        assertEquals("forall X. (p(X,f(g(d))) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))", formula.toString());
     }
 }
