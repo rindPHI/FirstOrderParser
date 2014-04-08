@@ -44,15 +44,16 @@ form  ::=   pred
           | "forall " var "." form
           
 where variables (var) start with upper case letters, and predicates (pred) and
-functions (fun) start with lower case letter. Digits and underscores are allowed,
+functions (fun) start with lower case letters. Digits and underscores are allowed,
 superfluous whitespace is ignored.
 
 --------------------------------------
 
 The main class is de.dominicscheurer.fol.parser.FOLParser. Example usage:
 
-Formula formula = 
-    FOLParser.parse("forall X. (p(X,Y) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))");
+Formula formula = FOLParser.parse(
+	"forall X. (p(X,Y) & exists Y. (p(Y,f(X,Y)) -> (q(c) | !r)))"
+);
 formula.substitute(new Term("d"), new Variable("Y"));
 
 --------------------------------------
